@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>微博 · 配置面板</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#ffffff; --line:#e6e8ec; --line2:#eef0f3;
+    --text:#1f2329; --text2:#5f6672; --text3:#8f96a3;
+    --brand:#2f6fed; --brand-soft:#eef3ff;
+    --ok:#1f9d63; --warn:#c9821a; --danger:#d64545;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:32px 24px 96px}
+  header{margin-bottom:24px}
+  h1{margin:0 0 8px;font-size:22px;font-weight:600;letter-spacing:-.01em}
+  .sub{color:var(--text2);font-size:13.5px;margin:0}
+  .banner{
+    margin:18px 0 24px;padding:12px 14px;border-radius:var(--radius);
+    background:var(--brand-soft);border:1px solid #dbe6ff;color:#23407e;font-size:13px;
+  }
+  .banner b{font-weight:600}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:4px 18px 8px;margin-bottom:16px;
+  }
+  .card > h2{
+    font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.04em;
+    margin:16px 0 4px;text-transform:uppercase;
+  }
+  .row{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:16px 24px;
+    padding:13px 0;border-bottom:1px solid var(--line2);flex-wrap:wrap;
+  }
+  .row:last-child{border-bottom:none}
+  .row .meta{flex:1 1 300px;min-width:220px}
+  .label{font-size:13.5px;font-weight:500}
+  .hint{color:var(--text3);font-size:12px;line-height:1.5;margin-top:3px}
+  .ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  input[type=number],input[type=text],input[type=time],select{
+    font:inherit;font-size:13px;color:var(--text);background:#fff;
+    border:1px solid var(--line);border-radius:7px;height:32px;padding:0 9px;outline:none;
+    font-variant-numeric:tabular-nums;transition:border-color .12s;
+  }
+  input[type=number]{width:88px}
+  input[type=text]{width:220px}
+  input[type=time]{width:112px}
+  input:focus,select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(47,111,237,.12)}
+  input[type=range]{width:150px;accent-color:var(--brand)}
+  .val{font-size:12.5px;color:var(--text2);min-width:38px;font-variant-numeric:tabular-nums}
+  .unit{font-size:12.5px;color:var(--text3)}
+
+  /* 开关 */
+  .sw{position:relative;display:inline-flex;align-items:center;cursor:pointer;user-select:none}
+  .sw input{position:absolute;opacity:0;width:0;height:0}
+  .sw span{
+    width:40px;height:22px;border-radius:999px;background:#d6dae1;position:relative;
+    transition:background .16s;
+  }
+  .sw span::after{
+    content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.18);transition:transform .16s;
+  }
+  .sw input:checked + span{background:var(--brand)}
+  .sw input:checked + span::after{transform:translateX(18px)}
+
+  .win{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    padding:10px 0;border-bottom:1px dashed var(--line2);
+  }
+  .win:last-of-type{border-bottom:none}
+  .win .idx{font-size:12px;color:var(--text3);width:54px}
+
+  button{
+    font:inherit;font-size:13px;height:32px;padding:0 13px;border-radius:7px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--text);transition:.12s;
+  }
+  button:hover{border-color:#c9cfd8;background:#fafbfc}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.primary:hover{filter:brightness(1.06)}
+  button.ghost{color:var(--text2)}
+  button.danger{color:var(--danger);border-color:#f0d4d4}
+  button.danger:hover{background:#fdf4f4}
+
+  .actions{
+    position:sticky;bottom:0;margin-top:22px;padding:14px 0;
+    background:linear-gradient(to top,var(--bg) 72%,rgba(255,255,255,0));
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  }
+  .dirty{color:var(--warn);font-size:12.5px}
+
+  .out{
+    margin-top:14px;border:1px solid var(--line);border-radius:var(--radius);
+    background:#fbfcfe;overflow:hidden;
+  }
+  .out header{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:10px 14px;border-bottom:1px solid var(--line);margin:0;
+  }
+  .out header b{font-size:12.5px;color:var(--text2);font-weight:600}
+  pre{
+    margin:0;padding:14px;max-height:340px;overflow:auto;
+    font:12px/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    color:#33404f;white-space:pre;
+  }
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(10px);
+    background:#1f2329;color:#fff;font-size:12.5px;padding:9px 16px;border-radius:999px;
+    opacity:0;pointer-events:none;transition:.2s;
+  }
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:#f0f2f5;color:var(--text2);margin-left:6px}
+  .tag.changed{background:#fff4e0;color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>微博 · 配置面板</h1>
+    <p class="sub">改完点下面「复制配置」或「复制指令」发给我，我写进服务器的 <code>~/.dsh/weibo-dive/config.json</code>。</p>
+  </header>
+
+  <div class="banner">
+    <b>说明：</b>这台 DSH（0.2.1-rc.5）的插件设置页只认官方插件，第三方插件挂不上去（服务视图缺 fiber 绑定），
+    所以配置用这个面板改。改完的一轮会在下次醒来时生效——模型每轮开工都会自己读一遍。
+  </div>
+
+  <!-- 刷取 -->
+  <section class="card">
+    <h2>刷取</h2>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">每轮读几条</div>
+        <div class="hint">模型这一轮会读到多少条微博。太多会变慢，10 条左右够看。</div>
+      </div>
+      <div class="ctl">
+        <input type="range" id="readPerRound_r" min="1" max="30" step="1">
+        <input type="number" id="readPerRound" min="1" max="50" step="1">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">只刷这个超话</div>
+        <div class="hint">留空 = 刷关注流。关注流多是官方公告，模型常常「接不上一句」；填「绝区零」这样的超话名字，才更像在跟人说话。</div>
+      </div>
+      <div class="ctl">
+        <input type="text" id="autoTopic" placeholder="留空 = 关注流">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">最多翻几页</div>
+        <div class="hint">一页约 10 条。</div>
+      </div>
+      <div class="ctl">
+        <input type="number" id="pageLimit" min="1" max="5" step="1">
+        <span class="unit">页</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">正文截断</div>
+        <div class="hint">单条超过多少字就截断，再交给模型。</div>
+      </div>
+      <div class="ctl">
+        <input type="number" id="maxTextChars" min="40" max="2000" step="20">
+        <span class="unit">字</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 回帖 -->
+  <section class="card">
+    <h2>回帖</h2>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">允许自动回帖</div>
+        <div class="hint">关掉就只刷，一句话都不说。</div>
+      </div>
+      <div class="ctl">
+        <label class="sw"><input type="checkbox" id="autoComment"><span></span></label>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">每轮掷骰概率</div>
+        <div class="hint">中了才让模型挑一条说。0 = 永不说，1 = 每轮都考虑。</div>
+      </div>
+      <div class="ctl">
+        <input type="range" id="commentChance_r" min="0" max="1" step="0.05">
+        <span class="val" id="commentChance_v">0.35</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">每天最多几条</div>
+        <div class="hint">硬上限，模型撞到就收手。</div>
+      </div>
+      <div class="ctl">
+        <input type="number" id="commentDailyLimit" min="0" max="20" step="1">
+        <span class="unit">条</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">两条之间至少隔</div>
+        <div class="hint">太密容易被限流。</div>
+      </div>
+      <div class="ctl">
+        <input type="number" id="commentMinGapMin" min="0" max="1440" step="5">
+        <span class="unit">分钟</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 作息 -->
+  <section class="card">
+    <h2>作息</h2>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">到点自动醒</div>
+        <div class="hint">关掉就只在你手动触发时才动。</div>
+      </div>
+      <div class="ctl">
+        <label class="sw"><input type="checkbox" id="autoRun"><span></span></label>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">醒来窗口</div>
+        <div class="hint">每个窗口内随机醒 n 次，一次醒 = 刷一轮。比如 19:00–23:00 醒 2 次，就是这段时间里刷 2 轮。</div>
+      </div>
+      <div class="ctl"></div>
+    </div>
+
+    <div id="wins"></div>
+    <div style="padding:10px 0 14px">
+      <button id="addWin" class="ghost">+ 添加窗口</button>
+    </div>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">两次醒来至少隔</div>
+        <div class="hint">防止两轮挤在一起。</div>
+      </div>
+      <div class="ctl">
+        <input type="number" id="minGapMin" min="0" max="1440" step="5">
+        <span class="unit">分钟</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 运行 -->
+  <section class="card">
+    <h2>运行</h2>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">一轮最长等</div>
+        <div class="hint">超时就杀掉子进程。实测一轮 30~90 秒，10 分钟很宽松。</div>
+      </div>
+      <div class="ctl">
+        <input type="number" id="runTimeoutMin" min="1" max="60" step="1">
+        <span class="unit">分钟</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="meta">
+        <div class="label">子进程 profile</div>
+        <div class="hint">用哪个 profile 起子进程干活。那个 profile 里也要装本插件。</div>
+      </div>
+      <div class="ctl">
+        <input type="text" id="headlessProfile" style="width:140px">
+      </div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button class="primary" id="copyJson">复制配置</button>
+    <button id="copyWords">复制指令</button>
+    <button class="ghost" id="reset">恢复当前值</button>
+    <span class="dirty" id="dirty" style="display:none">● 有改动还没复制</span>
+  </div>
+
+  <div class="out">
+    <header>
+      <b>将写入 config.json 的内容</b>
+      <span id="changedCount" class="tag">无改动</span>
+    </header>
+    <pre id="json"></pre>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// 服务器上当前的配置（2026-11-10）。改了这里就是改「恢复当前值」的基准。
+const CURRENT = {
+  readPerRound: 10,
+  autoTopic: '',
+  pageLimit: 2,
+  maxTextChars: 160,
+  autoComment: true,
+  commentChance: 0.35,
+  commentDailyLimit: 3,
+  commentMinGapMin: 30,
+  autoRun: true,
+  night: {
+    enabled: true,
+    windows: [{ start: '19:00', end: '23:00', wakes: 2 }],
+    minGapMin: 20,
+  },
+  runTimeoutMin: 10,
+  headlessProfile: 'headless',
+};
+
+const $ = (id) => document.getElementById(id);
+const clamp = (v, lo, hi, d) => {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return d;
+  return Math.min(hi, Math.max(lo, n));
+};
+
+let windows = JSON.parse(JSON.stringify(CURRENT.night.windows));
+
+function readForm() {
+  return {
+    readPerRound: clamp($('readPerRound').value, 1, 50, 10),
+    autoTopic: $('autoTopic').value.trim(),
+    pageLimit: clamp($('pageLimit').value, 1, 5, 2),
+    maxTextChars: clamp($('maxTextChars').value, 40, 2000, 160),
+    autoComment: $('autoComment').checked,
+    commentChance: Math.round(clamp($('commentChance_r').value, 0, 1, 0.35) * 100) / 100,
+    commentDailyLimit: clamp($('commentDailyLimit').value, 0, 20, 3),
+    commentMinGapMin: clamp($('commentMinGapMin').value, 0, 1440, 30),
+    autoRun: $('autoRun').checked,
+    night: {
+      enabled: CURRENT.night.enabled,
+      windows: windows.map((w) => ({
+        start: w.start,
+        end: w.end,
+        wakes: clamp(w.wakes, 0, 6, 1),
+      })),
+      minGapMin: clamp($('minGapMin').value, 0, 1440, 20),
+    },
+    runTimeoutMin: clamp($('runTimeoutMin').value, 1, 60, 10),
+    headlessProfile: $('headlessProfile').value.trim() || 'headless',
+  };
+}
+
+function diff(a, b, path = '') {
+  const out = [];
+  const keys = new Set([...Object.keys(a || {}), ...Object.keys(b || {})]);
+  for (const k of keys) {
+    const p = path ? `${path}.${k}` : k;
+    const va = a?.[k];
+    const vb = b?.[k];
+    if (va && vb && typeof va === 'object' && typeof vb === 'object') out.push(...diff(va, vb, p));
+    else if (JSON.stringify(va) !== JSON.stringify(vb)) out.push(p);
+  }
+  return out;
+}
+
+const LABEL = {
+  readPerRound: '每轮条数', autoTopic: '超话', pageLimit: '翻页数', maxTextChars: '正文截断',
+  autoComment: '允许回帖', commentChance: '掷骰概率', commentDailyLimit: '每天上限',
+  commentMinGapMin: '评论间隔', autoRun: '自动运行', night: '作息',
+  runTimeoutMin: '一轮超时', headlessProfile: '子进程 profile',
+};
+
+function render() {
+  const cfg = readForm();
+  const changed = diff(CURRENT, cfg);
+  $('json').textContent = JSON.stringify(cfg, null, 2);
+  $('changedCount').textContent = changed.length ? `改动 ${changed.length} 处` : '无改动';
+  $('changedCount').className = changed.length ? 'tag changed' : 'tag';
+  $('dirty').style.display = changed.length ? '' : 'none';
+  $('commentChance_v').textContent = cfg.commentChance.toFixed(2);
+  $('readPerRound_r').value = cfg.readPerRound;
+  $('commentChance_r').value = cfg.commentChance;
+  return { cfg, changed };
+}
+
+function renderWins() {
+  const box = $('wins');
+  box.innerHTML = '';
+  windows.forEach((w, i) => {
+    const row = document.createElement('div');
+    row.className = 'win';
+    row.innerHTML = `
+      <span class="idx">窗口 ${i + 1}</span>
+      <input type="time" value="${w.start}" data-i="${i}" data-k="start">
+      <span style="color:#8f96a3">→</span>
+      <input type="time" value="${w.end}" data-i="${i}" data-k="end">
+      <input type="number" value="${w.wakes}" min="0" max="6" step="1" style="width:70px" data-i="${i}" data-k="wakes">
+      <span class="unit">次</span>
+      <button class="danger" data-del="${i}" style="margin-left:auto">删除</button>
+    `;
+    box.appendChild(row);
+  });
+  box.querySelectorAll('input').forEach((el) => {
+    el.addEventListener('input', () => {
+      windows[Number(el.dataset.i)][el.dataset.k] = el.value;
+      render();
+    });
+  });
+  box.querySelectorAll('[data-del]').forEach((el) => {
+    el.addEventListener('click', () => {
+      windows.splice(Number(el.dataset.del), 1);
+      if (!windows.length) windows.push({ start: '19:00', end: '23:00', wakes: 1 });
+      renderWins();
+      render();
+    });
+  });
+}
+
+function fill(cfg) {
+  $('readPerRound').value = cfg.readPerRound;
+  $('autoTopic').value = cfg.autoTopic || '';
+  $('pageLimit').value = cfg.pageLimit;
+  $('maxTextChars').value = cfg.maxTextChars;
+  $('autoComment').checked = cfg.autoComment;
+  $('commentChance_r').value = cfg.commentChance;
+  $('commentDailyLimit').value = cfg.commentDailyLimit;
+  $('commentMinGapMin').value = cfg.commentMinGapMin;
+  $('autoRun').checked = cfg.autoRun;
+  $('minGapMin').value = cfg.night.minGapMin;
+  $('runTimeoutMin').value = cfg.runTimeoutMin;
+  $('headlessProfile').value = cfg.headlessProfile;
+  windows = JSON.parse(JSON.stringify(cfg.night.windows));
+  renderWins();
+  render();
+}
+
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 1600);
+}
+
+async function copy(text, okMsg) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(okMsg);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    toast(okMsg);
+  }
+}
+
+document.querySelectorAll('input').forEach((el) => {
+  el.addEventListener('input', render);
+  el.addEventListener('change', render);
+});
+
+$('readPerRound_r').addEventListener('input', (e) => {
+  $('readPerRound').value = e.target.value;
+  render();
+});
+$('readPerRound').addEventListener('input', (e) => {
+  $('readPerRound_r').value = e.target.value;
+});
+
+$('addWin').addEventListener('click', () => {
+  windows.push({ start: '19:00', end: '23:00', wakes: 1 });
+  renderWins();
+  render();
+});
+
+$('reset').addEventListener('click', () => {
+  fill(CURRENT);
+  toast('已恢复到当前配置');
+});
+
+$('copyJson').addEventListener('click', () => {
+  const { cfg } = render();
+  copy(JSON.stringify(cfg, null, 2), '配置已复制');
+});
+
+$('copyWords').addEventListener('click', () => {
+  const { cfg, changed } = render();
+  if (!changed.length) return copy('配置没改，不用动。', '已复制');
+  const lines = changed.map((k) => {
+    const top = k.split('.')[0];
+    const label = LABEL[top] || top;
+    if (top === 'night') {
+      const w = cfg.night.windows.map((x) => `${x.start}-${x.end} 醒 ${x.wakes} 次`).join('；');
+      return `- 作息：${w}，两次醒来至少隔 ${cfg.night.minGapMin} 分钟`;
+    }
+    const v = cfg[top];
+    return `- ${label}：${typeof v === 'boolean' ? (v ? '开' : '关') : (v === '' ? '留空（刷关注流）' : v)}`;
+  });
+  const uniq = [...new Set(lines)];
+  copy(`把微博插件的配置改成这样：\n${uniq.join('\n')}`, '指令已复制，发给我就行');
+});
+
+fill(CURRENT);
+</script>
+</body>
+</html>

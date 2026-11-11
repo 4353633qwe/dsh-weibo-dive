@@ -1,0 +1,82 @@
+{
+  "name": "dsh-weibo-dive",
+  "version": "1.0.0",
+  "description": "DSH 插件 · 微博：按作息自己醒来，看配置、读人设、刷内容（跨轮去重）、判断该不该说话，写真人日记。纯 HTTP，不需要浏览器。",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "weibo",
+    "diary"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./headless": "./headless.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "README.md",
+    "cordis.patch.yml",
+    "headless.js",
+    "index.js",
+    "lib",
+    "prompts",
+    "tools"
+  ],
+  "engines": {
+    "dsh": ">=0.1.7-rc.1",
+    "node": ">=22"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-slots"
+      ],
+      "immediately": true
+    },
+    "hub": {
+      "schemaVersion": 1,
+      "displayName": "微博",
+      "summary": "按作息自己醒来，看配置、读人设、刷内容、判断该不该说话，写真人日记。",
+      "description": "纯 HTTP 刷微博：按醒来窗口自动刷，模型自己判断回不回、回哪条；跨轮已读去重防止连续几轮刷到同一批内容。唯一的输出是日记——她写给自己的随笔，按人设口吻写。去重轮数能在设置页改。",
+      "categories": [
+        "community"
+      ],
+      "keywords": [
+        "deepseek-harness",
+        "dsh",
+        "plugin",
+        "weibo",
+        "diary"
+      ],
+      "compatibility": {
+        "dsh": ">=0.2.0-rc.1 <0.3.0-0",
+        "node": ">=22",
+        "platforms": [
+          "win32",
+          "darwin",
+          "linux"
+        ],
+        "surfaces": [
+          "web"
+        ],
+        "hmr": "config"
+      },
+      "entryIds": [
+        "weibo-dive"
+      ],
+      "before": [],
+      "after": [],
+      "channel": "stable"
+    }
+  }
+}

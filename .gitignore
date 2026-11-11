@@ -1,0 +1,5 @@
+# 插件运行时数据（cookie / 日记 / 配置 / 日志），绝不提交
+data/
+*.tgz
+node_modules/
+.DS_Store
